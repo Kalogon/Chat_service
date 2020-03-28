@@ -7,9 +7,23 @@
 </head>
 <body>
     <h1>Hello</h1>
+    <ul id="chatting"></ul>
+    <input type="text" id="message">
+    <button id="send">Send</button>
     <script src="/socket.io/socket.io.js"></script>
     <script>
       var socket = io();
+      document.getElementById("send").onclick = function(){
+        console.log("button click")
+        socket.emit('chat message',document.getElementById("message").value)
+      }
+
+      socket.on('chat message',function(message){
+        var li = document.createElement('li')
+        li.innerHTML = message
+        document.getElementById("chatting").appendChild(li)
+      })
+      
     </script>
 </body>
 </html>
