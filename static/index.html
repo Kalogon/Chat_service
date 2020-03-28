@@ -4,24 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+      ol, ul {
+        list-style: none;
+      }
+      .display{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        
+      }
+      ul{
+        padding: 0;
+        border: 2px solid black;
+        width: 70%;
+      }
+      li.mine{
+        text-align: right;
+      }
+    </style>
 </head>
 <body>
-    <h1>Hello</h1>
-    <ul id="chatting"></ul>
-    <input type="text" id="message">
-    <button id="send">Send</button>
+    <h1>Chatting room</h1>
+    <div class="display">
+      <ul class="chatting"></ul>
+      <input type="text" id="message">
+      <button id="send">Send</button>
+    </div>
+    
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io();
+      const socket = io();
       document.getElementById("send").onclick = function(){
-        console.log("button click")
-        socket.emit('chat message',document.getElementById("message").value)
+        const message = document.getElementById("message").value
+        socket.emit('chat message',message)
+        const li = document.createElement('li')
+        li.className = "mine"
+        li.innerHTML = message
+        document.getElementById("message").value = ""
+        document.getElementsByClassName("chatting")[0].appendChild(li)
       }
 
+      document.getElementById("message").addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+          event.preventDefault();
+          const message = document.getElementById("message").value
+          socket.emit('chat message',message)
+          const li = document.createElement('li')
+          li.className = "mine"
+          li.innerHTML = message
+          document.getElementById("message").value = ""
+          document.getElementsByClassName("chatting")[0].appendChild(li)
+        }
+      });
+
+
       socket.on('chat message',function(message){
-        var li = document.createElement('li')
+        const li = document.createElement('li')
         li.innerHTML = message
-        document.getElementById("chatting").appendChild(li)
+        document.getElementsByClassName("chatting")[0].appendChild(li)
       })
       
     </script>
