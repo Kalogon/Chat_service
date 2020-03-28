@@ -23,10 +23,14 @@
       li.mine{
         text-align: right;
       }
+      li.enter{
+        text-align: center;
+      }
     </style>
 </head>
 <body>
     <h1>Chatting room</h1>
+    <h2 id="username"></h2>
     <div class="display">
       <ul class="chatting"></ul>
       <input type="text" id="message">
@@ -42,7 +46,7 @@
         socket.emit('chat message',message)
         const li = document.createElement('li')
         li.className = "mine"
-        li.innerHTML = message
+        li.innerHTML = "Me: " + message
         document.getElementById("message").value = ""
         document.getElementsByClassName("chatting")[0].appendChild(li)
       }
@@ -54,19 +58,30 @@
           socket.emit('chat message',message)
           const li = document.createElement('li')
           li.className = "mine"
-          li.innerHTML = message
+          li.innerHTML = "Me: " + message
           document.getElementById("message").value = ""
           document.getElementsByClassName("chatting")[0].appendChild(li)
         }
       });
 
 
-      socket.on('chat message',function(message){
+      socket.on('chat message',function(user, message){
         const li = document.createElement('li')
-        li.innerHTML = message
+        li.innerHTML = user + ": " + message
         document.getElementsByClassName("chatting")[0].appendChild(li)
       })
       
+      socket.on('enter',function(username){
+        const li = document.createElement('li')
+        li.className = "enter"
+        li.innerHTML = username + " is entered"
+        console.log("user add")
+        document.getElementsByClassName("chatting")[0].appendChild(li)
+      })
+
+      socket.on('name',function(name){
+        document.getElementById("username").innerHTML = "Your name is " + name
+      })
     </script>
 </body>
 </html>
