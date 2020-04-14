@@ -4,7 +4,7 @@ const app = express()
 const socketEvents = require('./socket.js')
 
 
-const port = 3000;
+const port = 8080;
 
 app.get('/',(req,res)=>{
     res.sendFile(__dirname + '/static/index.html')
