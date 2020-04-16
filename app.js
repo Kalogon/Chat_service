@@ -7,7 +7,7 @@ const socketEvents = require('./socket.js')
 const port = 8080;
 
 app.get('/',(req,res)=>{
-    res.sendFile(__dirname + '/static/index.html')
+    res.sendFile(__dirname + '/static/index.html')  
 })
 
 
@@ -17,4 +17,4 @@ const server = app.listen(port, ()=>{
 
 
 const io = SocketIo(server)
-socketEvents(io)
+socketEvents(io) 

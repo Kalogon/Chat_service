@@ -8,8 +8,16 @@
       ol, ul {
         list-style: none;
       }
+      html,body{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
       .content{
         display: flex;
+        width: 100%;
+        height: 70%;
       }
       .aside{
         width: 10%;
@@ -18,14 +26,16 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         width: 90%;
+        height: 100%;
         
       }
       ul.chatting{
         padding: 0;
         border: 2px solid black;
         width: 70%;
+        height: 40%;
+        overflow: auto;
       }
       li.mine{
         text-align: right;
@@ -54,17 +64,27 @@
     
     <script src="/socket.io/socket.io.js"></script>
     <script>
+      const chatting_height = "50%" // 채팅방 크기 (전체 html 태그 기준 * 70% * 현재 퍼센트가 채팅방 높이가 됨)
+      const chattings = document.getElementsByClassName("chatting")[0]
+
+
+      document.addEventListener("DOMContentLoaded", function(){
+        chattings.style.height = chatting_height
+      });
+
       let prev_time = [0,0,0,0,0,0,0]
 
-      const check= function(d){
+      const check= function(d){ // check 함수는 도배 방지용으로 0.2초 안에 보낸 메시지가 있으면 자동으로 block 시킴 -> Mac 키보드 오류도 방지함
         let time = [d.getYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(),d.getMilliseconds()]
+        const interval = 200
+
         for(let i = 0; i < 6 ; i++){
           if(time[i]>prev_time[i]){
             prev_time = time
             return true
           }
         }
-        if(time[6]>prev_time[6]+200){
+        if(time[6]>prev_time[6]+interval){
           prev_time = time
           return true
         }
@@ -74,23 +94,25 @@
       
       const socket = io();
 
-      const send_click = function(){
+      const send_click = function(){ // click 버튼 들어오면 chat message 로 socket에 메시지 보냄
         let d = new Date();
-        if(check(d)){
+        if(check(d)){ // 도배 방지 체크
           const message = document.getElementById("message").value
           socket.emit('chat message',message)
           const li = document.createElement('li')
           li.className = "mine"
           li.innerText = "Me: " + message
           document.getElementById("message").value = ""
-          document.getElementsByClassName("chatting")[0].appendChild(li)
+          chattings.appendChild(li)
+          chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
         }
       }
 
-      const send_enter = function(event) {
+      const send_enter = function(event) { // enter 버튼 들어오면 chat message 로 socket에 메시지 보냄
         if (event.keyCode === 13) {
           let d = new Date();
-          if(check(d)){
+
+          if(check(d)){ // 도배 방지 체크 
             event.preventDefault();
             const message = document.getElementById("message").value
             socket.emit('chat message',message)
@@ -98,7 +120,8 @@
             li.className = "mine"
             li.innerText = "Me: " + message
             document.getElementById("message").value = ""
-            document.getElementsByClassName("chatting")[0].appendChild(li)
+            chattings.appendChild(li)
+            chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
           }
         }
       };
@@ -109,9 +132,9 @@
       
       
 
-      socket.on('members',function(accessor){
+      socket.on('members',function(accessor){ // 변경된 members 정보를 socket 으로부터 받아서 div.members에 넣어줌
         console.log(accessor)
-        // document.getElementsByClassName("members")[0].removeChild()
+
         if(document.getElementsByClassName("members")[0].childElementCount != 0){
           console.log("일단")
           document.getElementsByClassName("members")[0].innerHTML = ""
@@ -124,29 +147,34 @@
         }
       })
 
-      socket.on('chat message',function(user, message){
+      socket.on('chat message',function(user, message){ // chat message를 socket 으로부터 받아서 ul.chatting 에 li child 로 넣어줌
+        
         const li = document.createElement('li')
         li.innerText = user + ": " + message
-        document.getElementsByClassName("chatting")[0].appendChild(li)
+        chattings.appendChild(li)
+        chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
       })
       
-      socket.on('enter',function(username){
+      socket.on('enter',function(username){ // 새로운 유저가 들어왔다는 것을 socket으로부터 받아서 ul.chatting 에 보어줌
+        
         const li = document.createElement('li')
         li.className = "enter"
         li.innerText = username + " is entered"
         console.log("user add")
-        document.getElementsByClassName("chatting")[0].appendChild(li)
+        chattings.appendChild(li)
+        chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
       })
 
-      socket.on('out',function(username){
+      socket.on('out',function(username){ // 유저가 나갔다는 것을 socket으로부터 받아서 ul.chatting 에 보어줌
         const li = document.createElement('li')
         li.className = "enter"
         li.innerText = username + " left the room"
         console.log("user left")
-        document.getElementsByClassName("chatting")[0].appendChild(li)
+        chattings.appendChild(li)
+        chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
       })
 
-      socket.on('name',function(name){
+      socket.on('name',function(name){ // 로그인이 없는 상태이므로 접속하면 랜덤 유저이름을 socket에서 보내주고 그걸 받아서 보여줌
         document.getElementById("username").innerText = "Your name is " + name
       })
     </script>
