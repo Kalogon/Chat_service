@@ -57,6 +57,7 @@
         <ul class="chatting"></ul>
         <input type="text" id="message">
         <button id="send">Send</button>
+        <button id="below">아래로</button>
       </div>
     </div>
     
@@ -92,19 +93,30 @@
         return false
       }
       
+
+      document.getElementById("below").addEventListener('click',function(){
+        console.log(chattings.scrollTop)
+        console.log(chattings.scrollHeight)
+        chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
+      })
+
       const socket = io();
 
       const send_click = function(){ // click 버튼 들어오면 chat message 로 socket에 메시지 보냄
         let d = new Date();
         if(check(d)){ // 도배 방지 체크
           const message = document.getElementById("message").value
+
           socket.emit('chat message',message)
           const li = document.createElement('li')
           li.className = "mine"
           li.innerText = "Me: " + message
           document.getElementById("message").value = ""
           chattings.appendChild(li)
+          
           chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
+        
+          
         }
       }
 
@@ -121,7 +133,9 @@
             li.innerText = "Me: " + message
             document.getElementById("message").value = ""
             chattings.appendChild(li)
+
             chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
+            
           }
         }
       };
@@ -148,30 +162,36 @@
       })
 
       socket.on('chat message',function(user, message){ // chat message를 socket 으로부터 받아서 ul.chatting 에 li child 로 넣어줌
-        
         const li = document.createElement('li')
         li.innerText = user + ": " + message
         chattings.appendChild(li)
+        
         chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
+        
       })
       
       socket.on('enter',function(username){ // 새로운 유저가 들어왔다는 것을 socket으로부터 받아서 ul.chatting 에 보어줌
-        
+
         const li = document.createElement('li')
         li.className = "enter"
         li.innerText = username + " is entered"
         console.log("user add")
         chattings.appendChild(li)
+        
         chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
+        
       })
 
       socket.on('out',function(username){ // 유저가 나갔다는 것을 socket으로부터 받아서 ul.chatting 에 보어줌
+
         const li = document.createElement('li')
         li.className = "enter"
         li.innerText = username + " left the room"
         console.log("user left")
         chattings.appendChild(li)
+       
         chattings.scrollTop = chattings.scrollHeight // 채팅 스크롤 맨 아래로 유지
+        
       })
 
       socket.on('name',function(name){ // 로그인이 없는 상태이므로 접속하면 랜덤 유저이름을 socket에서 보내주고 그걸 받아서 보여줌
